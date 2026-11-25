@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>룰렛픽 · 무료 랜덤 추첨기 (룰렛·사다리타기·순서 정하기·팀 나누기)</title>
+  <meta name="description" content="회원가입 없이 무료로 쓰는 랜덤 추첨 도구 모음. 돌림판 룰렛, 사다리타기, 순서 정하기, 팀 나누기, 랜덤 숫자 뽑기를 한 곳에서 사용하세요." />
+  <meta name="robots" content="index, follow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet" />
+  <!-- 애드센스 승인 후 여기에 광고 스크립트를 넣으세요 -->
+  <style>
+    :root {
+      --bg: #0b0f17; --card: #131a26; --card2: #1a2333; --line: #263248;
+      --text: #f8fafc; --sub: #94a3b8; --gold: #f59e0b; --orange: #ff7a18;
+      --green: #10b981; --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 16px; }
+    .container { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    a { color: #fde68a; }
+
+    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-mark { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg,#ff5e1a,#ff9900 55%,#ffc837); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(255,122,24,.35); }
+    .logo-name { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg,#ff7a18,#ffa928 50%,#ffe082); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .tagline { font-size: .85rem; color: var(--sub); }
+
+    .hero { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; }
+    .hero h1 { font-size: 1.4rem; font-weight: 900; letter-spacing: -.02em; }
+    .hero p { color: var(--sub); font-size: .92rem; margin-top: 4px; }
+
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab { flex: 1; min-width: 110px; background: var(--card); border: 1px solid var(--line); color: var(--sub); padding: 11px 10px; border-radius: 12px; font-family: inherit; font-size: .92rem; font-weight: 700; cursor: pointer; transition: .15s; }
+    .tab:hover { background: var(--card2); }
+    .tab.active { color: #0b0f17; background: linear-gradient(135deg,#ff6a1a,#f59e0b); border-color: transparent; }
+
+    .panel { display: none; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+    .panel.active { display: block; }
+    .panel h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+    .panel .desc { color: var(--sub); font-size: .86rem; margin-bottom: 16px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: .84rem; font-weight: 700; color: #cbd5e1; margin: 12px 0 6px; }
+    textarea, input[type=text], input[type=number] { width: 100%; background: #0d121c; border: 1px solid #334155; border-radius: 10px; color: var(--text); font-family: inherit; font-size: .95rem; padding: 10px 12px; }
+    textarea { min-height: 150px; resize: vertical; }
+    textarea:focus, input:focus { outline: none; border-color: var(--gold); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 1; min-width: 90px; }
+    .check { display: flex; align-items: center; gap: 8px; font-size: .86rem; color: #cbd5e1; margin-top: 12px; cursor: pointer; }
+    .check input { width: 17px; height: 17px; accent-color: var(--gold); }
+
+    .btn { background: linear-gradient(135deg,#ff6a1a,#f59e0b); color: #0b0f17; border: none; padding: 12px 18px; border-radius: 10px; font-family: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; transition: .15s; }
+    .btn:hover { transform: translateY(-1px); opacity: .95; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn.ghost { background: var(--card2); color: #e2e8f0; border: 1px solid var(--line); }
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+    .result-box { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 14px; text-align: center; min-height: 64px; }
+    .result-box.hit { border-color: var(--gold); background: rgba(245,158,11,.08); }
+    .result-label { font-size: .8rem; color: var(--sub); }
+    .result-main { font-size: 1.5rem; font-weight: 900; color: var(--gold); word-break: break-all; margin-top: 2px; }
+    .hist { margin-top: 12px; font-size: .84rem; color: var(--sub); }
+    .hist ol { padding-left: 20px; margin-top: 4px; max-height: 130px; overflow-y: auto; }
+
+    .wheel-stage { position: relative; display: flex; justify-content: center; padding: 14px 0 6px; }
+    .pointer { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 28px solid var(--red); filter: drop-shadow(0 4px 6px rgba(0,0,0,.6)); z-index: 5; }
+    #wheel { max-width: 100%; height: auto; border-radius: 50%; box-shadow: 0 0 0 7px var(--card2), 0 12px 30px rgba(0,0,0,.5); }
+    #ladder { max-width: 100%; height: auto; background: #0d121c; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; display: block; margin: 12px auto 0; }
+
+    .list-out { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    .list-item { display: flex; align-items: center; gap: 12px; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-weight: 700; }
+    .list-item .no { font-family: 'JetBrains Mono', monospace; color: var(--gold); min-width: 28px; }
+    .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 14px; }
+    .team { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .team h3 { color: var(--gold); font-size: .95rem; margin-bottom: 6px; }
+    .team li { margin-left: 18px; font-size: .92rem; }
+    .nums { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+    .num-ball { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 800; min-width: 62px; padding: 10px 14px; border-radius: 14px; background: #0d121c; border: 2px solid var(--gold); color: var(--gold); }
+
+    .info { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+    .info h2 { font-size: 1.05rem; font-weight: 800; }
+    .info h3 { font-size: .95rem; font-weight: 800; color: #fde68a; margin-top: 4px; }
+    .info p, .info li { font-size: .88rem; color: var(--sub); }
+    .info ul { padding-left: 20px; }
+    footer { text-align: center; color: var(--sub); font-size: .8rem; padding: 8px 0 24px; display: flex; flex-direction: column; gap: 4px; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; border: 1px solid #334155; padding: 10px 18px; border-radius: 10px; font-size: .88rem; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 50; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="topbar">
+      <a href="./" class="logo" aria-label="룰렛픽 홈">
+        <span class="logo-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0b0f17" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="21"/><line x1="3" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="21" y2="12"/></svg>
+        </span>
+        <span class="logo-name">룰렛픽</span>
+      </a>
+      <span class="tagline">회원가입 · 설치 · 결제 없이 무료로 쓰는 랜덤 추첨 도구</span>
+    </div>
+
+    <section class="hero">
+      <h1>무료 랜덤 추첨기 모음</h1>
+      <p>돌림판 룰렛, 사다리타기, 순서 정하기, 팀 나누기, 랜덤 숫자 뽑기. 입력한 내용은 서버로 전송되지 않고 내 브라우저에서만 처리됩니다.</p>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="roulette">🎡 돌림판 룰렛</button>
+      <button class="tab" data-tab="ladder">🪜 사다리타기</button>
+      <button class="tab" data-tab="order">👥 순서·팀 나누기</button>
+      <button class="tab" data-tab="number">🔢 숫자 뽑기</button>
+    </nav>
+
+    <!-- 룰렛 -->
+    <section class="panel active" id="panel-roulette">
+      <h2>돌림판 룰렛</h2>
+      <p class="desc">항목을 한 줄에 하나씩 입력하고 돌려보세요. 점심 메뉴, 벌칙, 이벤트 당첨자 추첨 등에 쓸 수 있어요.</p>
+      <div class="grid2">
+        <div>
+          <label for="rItems">항목 (한 줄에 하나, 2~50개)</label>
+          <textarea id="rItems">짜장면
+짬뽕
+김치찌개
+돈까스
+비빔밥
+치킨</textarea>
+          <label class="check"><input type="checkbox" id="rRemove" /> 당첨된 항목은 다음 추첨에서 제외</label>
+          <div class="btns">
+            <button class="btn" id="rSpin">돌리기!</button>
+            <button class="btn ghost" id="rShuffle">항목 섞기</button>
+          </div>
+          <div class="result-box" id="rResult"><div class="result-label">결과</div><div class="result-main">-</div></div>
+          <div class="hist" id="rHist" style="display:none"><strong>추첨 기록</strong><ol></ol></div>
+        </div>
+        <div class="wheel-stage">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="380" height="380"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- 사다리 -->
+    <section class="panel" id="panel-ladder">
+      <h2>사다리타기</h2>
+      <p class="desc">참가자 이름을 위쪽 이름 칸에서 클릭하면 결과가 이어집니다. 결과 칸은 눌러서 확인하기 전까지 가려져 있어요.</p>
+      <div class="grid2">
+        <div>
+          <label for="lNames">참가자 (한 줄에 한 명, 2~8명)</label>
+          <textarea id="lNames" style="min-height:110px">민수
+지영
+철수
+유나</textarea>
+          <label for="lResults">결과 (참가자 수와 같은 개수, 비우면 당첨 1개 + 꽝)</label>
+          <textarea id="lResults" style="min-height:110px" placeholder="예) 커피 쏘기&#10;통과&#10;통과&#10;통과"></textarea>
+          <div class="btns">
+            <button class="btn" id="lBuild">사다리 만들기</button>
+            <button class="btn ghost" id="lRevealAll">전체 결과 보기</button>
+          </div>
+        </div>
+        <div>
+          <canvas id="ladder" width="420" height="440"></canvas>
+          <div class="result-box" id="lResult"><div class="result-label">이름을 클릭해 결과를 확인하세요</div><div class="result-main">-</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 순서/팀 -->
+    <section class="panel" id="panel-order">
+      <h2>순서 정하기 · 팀 나누기</h2>
+      <p class="desc">이름을 입력하면 무작위 순서로 섞거나, 원하는 팀 수로 공평하게 나눠줍니다.</p>
+      <label for="oNames">이름 (한 줄에 하나)</label>
+      <textarea id="oNames" style="min-height:130px">민수
+지영
+철수
+유나
+현우
+소라
+도윤
+하준</textarea>
+      <div class="row" style="margin-top:12px">
+        <div><label for="oTeams" style="margin-top:0">팀 수</label><input type="number" id="oTeams" min="2" max="20" value="2" /></div>
+      </div>
+      <div class="btns">
+        <button class="btn" id="oOrder">순서 정하기</button>
+        <button class="btn" id="oTeam">팀 나누기</button>
+        <button class="btn ghost" id="oCopy">결과 복사</button>
+      </div>
+      <div id="oOut"></div>
+    </section>
+
+    <!-- 숫자 -->
+    <section class="panel" id="panel-number">
+      <h2>랜덤 숫자 뽑기</h2>
+      <p class="desc">범위를 정하고 원하는 개수만큼 무작위 숫자를 뽑습니다. 번호표 추첨, 출석번호 뽑기에 편해요.</p>
+      <div class="row">
+        <div><label for="nMin">최솟값</label><input type="number" id="nMin" value="1" /></div>
+        <div><label for="nMax">최댓값</label><input type="number" id="nMax" value="45" /></div>
+        <div><label for="nCount">뽑을 개수</label><input type="number" id="nCount" min="1" max="100" value="6" /></div>
+      </div>
+      <label class="check"><input type="checkbox" id="nDup" /> 중복 허용</label>
+      <label class="check"><input type="checkbox" id="nSort" checked /> 작은 수부터 정렬해서 보기</label>
+      <div class="btns">
+        <button class="btn" id="nPick">뽑기</button>
+        <button class="btn ghost" id="nCopy">결과 복사</button>
+      </div>
+      <div class="result-box" id="nOut"><div class="nums"><span class="num-ball">?</span></div></div>
+    </section>
+
+    <!-- 안내 -->
+    <section class="info" id="guide">
+      <h2>랜덤 추첨기 사용 안내</h2>
+      <h3>공정한 추첨은 어떻게 이루어지나요?</h3>
+      <p>이 사이트의 모든 추첨은 브라우저의 암호학적 난수 생성기(crypto.getRandomValues)를 사용합니다. 같은 항목이 반복해서 나올 가능성은 순수한 확률에 따르며, 운영자가 결과를 조작하거나 미리 알 수 없는 구조입니다. 모든 계산은 접속한 기기 안에서만 일어납니다.</p>
+      <h3>이런 상황에서 쓰세요</h3>
+      <ul>
+        <li>점심·저녁 메뉴 고르기, 벌칙·심부름 정하기</li>
+        <li>모임·수업·팀 프로젝트에서 발표 순서 정하기, 조 편성하기</li>
+        <li>SNS·카페·유튜브 구독자 이벤트 당첨자 추첨 (참가비를 받지 않는 무료 이벤트에 한해 사용하세요)</li>
+        <li>번호표, 출석번호, 좌석 배정 등 임의의 숫자 뽑기</li>
+      </ul>
+      <h3>자주 묻는 질문</h3>
+      <p><strong>Q. 입력한 이름이 저장되나요?</strong><br />A. 아니요. 서버로 전송하거나 저장하지 않으며 새로고침하면 사라집니다.</p>
+      <p><strong>Q. 이벤트 추첨에 써도 되나요?</strong><br />A. 가능합니다. 다만 참가자에게 돈을 받고 당첨금이나 경품을 주는 방식은 도박·사행행위 관련 법령에 해당할 수 있으니 무료 참여 이벤트에만 사용하세요.</p>
+      <p><strong>Q. 항목이 많으면 어떻게 되나요?</strong><br />A. 룰렛은 최대 50개, 사다리는 최대 8명까지 지원하며 순서·팀 나누기는 이름 수 제한 없이 쓸 수 있습니다.</p>
+    </section>
+
+    <footer>
+      <div>룰렛픽 · 무료 랜덤 추첨 도구 · 입력 데이터는 서버에 저장되지 않습니다.</div>
+      <div>본 사이트의 추첨 결과는 오락·편의 목적이며, 금전이 오가는 도박이나 사행행위에 사용할 수 없습니다.</div>
+    </footer>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+
+    /* ---------- 공통 유틸 ---------- */
+    function randInt(n) {
+      const lim = Math.floor(0x100000000 / n) * n;
+      let x;
+      do { x = crypto.getRandomValues(new Uint32Array(1))[0]; } while (x >= lim);
+      return x % n;
+    }
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = randInt(i + 1);
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function lines(t) { return t.split('\n').map(s => s.trim()).filter(Boolean); }
+    function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function toast(msg) {
+      const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1600);
+    }
+    async function copyText(text) {
+      if (!text) { toast('복사할 결과가 없어요'); return; }
+      try { await navigator.clipboard.writeText(text); toast('복사했어요'); }
+      catch (e) { toast('복사에 실패했어요'); }
+    }
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6366f1'];
+
+    /* ---------- 탭 ---------- */
+    $$('.tab').forEach(btn => btn.addEventListener('click', () => {
+      $$('.tab').forEach(b => b.classList.remove('active'));
+      $$('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      $('#panel-' + btn.dataset.tab).classList.add('active');
+    }));
+
+    /* ---------- 룰렛 ---------- */
+    const wc = $('#wheel'), wctx = wc.getContext('2d');
+    let wItems = [], wRot = 0, spinning = false, wHist = [];
+
+    function readWheelItems() { wItems = lines($('#rItems').value).slice(0, 50); }
+    function drawWheel() {
+      const W = wc.width, cx = W / 2, r = cx - 6;
+      wctx.clearRect(0, 0, W, W);
+      if (wItems.length < 2) {
+        wctx.fillStyle = '#1a2333'; wctx.beginPath(); wctx.arc(cx, cx, r, 0, Math.PI * 2); wctx.fill();
+        wctx.fillStyle = '#94a3b8'; wctx.font = "bold 16px 'Noto Sans KR'"; wctx.textAlign = 'center';
+        wctx.fillText('항목을 2개 이상 입력하세요', cx, cx + 5);
+        return;
+      }
+      const a = Math.PI * 2 / wItems.length;
+      const fs = Math.max(11, Math.min(18, 260 / wItems.length + 6));
+      wItems.forEach((t, i) => {
+        const s = wRot + i * a;
+        wctx.beginPath(); wctx.moveTo(cx, cx); wctx.arc(cx, cx, r, s, s + a); wctx.closePath();
+        wctx.fillStyle = COLORS[i % COLORS.length]; wctx.fill();
+        wctx.strokeStyle = '#0b0f17'; wctx.lineWidth = 2; wctx.stroke();
+        wctx.save(); wctx.translate(cx, cx); wctx.rotate(s + a / 2);
+        wctx.textAlign = 'right'; wctx.fillStyle = '#fff'; wctx.font = `bold ${fs}px 'Noto Sans KR'`;
+        const label = t.length > 9 ? t.slice(0, 9) + '…' : t;
+        wctx.fillText(label, r - 16, fs / 3);
+        wctx.restore();
+      });
+      wctx.beginPath(); wctx.arc(cx, cx, 24, 0, Math.PI * 2);
+      wctx.fillStyle = '#0b0f17'; wctx.fill(); wctx.strokeStyle = '#f59e0b'; wctx.lineWidth = 3; wctx.stroke();
+    }
+    function spinWheel() {
+      if (spinning) return;
+      readWheelItems();
+      if (wItems.length < 2) { toast('항목을 2개 이상 입력하세요'); drawWheel(); return; }
+      const n = wItems.length, a = Math.PI * 2 / n, idx = randInt(n);
+      const jitter = (Math.random() - 0.5) * a * 0.7;
+      const target = -Math.PI / 2 - (idx + 0.5) * a + jitter;
+      const TAU = Math.PI * 2;
+      const delta = (((target - wRot) % TAU) + TAU) % TAU + TAU * (5 + randInt(3));
+      const start = wRot, dur = 4500, t0 = performance.now();
+      spinning = true; $('#rSpin').disabled = true;
+      (function step(now) {
+        const p = Math.min(1, (now - t0) / dur);
+        wRot = start + delta * (1 - Math.pow(1 - p, 4));
+        drawWheel();
+        if (p < 1) requestAnimationFrame(step);
+        else { spinning = false; $('#rSpin').disabled = false; finishSpin(idx); }
+      })(t0);
+    }
+    function finishSpin(idx) {
+      const win = wItems[idx];
+      const box = $('#rResult'); box.classList.add('hit');
+      box.innerHTML = `<div class="result-label">당첨!</div><div class="result-main">${esc(win)}</div>`;
+      wHist.unshift(win);
+      const h = $('#rHist'); h.style.display = 'block';
+      h.querySelector('ol').innerHTML = wHist.map(w => `<li>${esc(w)}</li>`).join('');
+      if ($('#rRemove').checked) {
+        const all = $('#rItems').value.split('\n');
+        const k = all.findIndex(s => s.trim() === win);
+        if (k >= 0) all.splice(k, 1);
+        $('#rItems').value = all.join('\n');
+        readWheelItems(); drawWheel();
+      }
+    }
+    $('#rSpin').addEventListener('click', spinWheel);
+    $('#rShuffle').addEventListener('click', () => {
+      $('#rItems').value = shuffle(lines($('#rItems').value)).join('\n');
+      readWheelItems(); drawWheel();
+    });
+    $('#rItems').addEventListener('input', () => { if (!spinning) { readWheelItems(); drawWheel(); } });
+    readWheelItems(); drawWheel();
+
+    /* ---------- 사다리 ---------- */
+    const lc = $('#ladder'), lctx = lc.getContext('2d');
+    const ROWS = 12, TOP = 56, BOTTOM_PAD = 56;
+    let L = null;
+
+    function colX(c) { return L.padX + c * L.colW; }
+    function rowY(r) { return TOP + (r + 0.5) * (lc.height - TOP - BOTTOM_PAD) / ROWS; }
+
+    function buildLadder() {
+      const names = lines($('#lNames').value);
+      if (names.length < 2 || names.length > 8) { toast('참가자는 2~8명으로 입력하세요'); return; }
+      const n = names.length;
+      let results = lines($('#lResults').value);
+      if (results.length === 0) { results = Array(n).fill('꽝'); results[0] = '당첨'; }
+      if (results.length !== n) { toast('결과 개수를 참가자 수(' + n + '개)와 맞춰주세요'); return; }
+      results = shuffle(results);
+
+      lc.width = Math.max(360, (n - 1) * 110 + 100);
+      const padX = 50;
+      const bridges = [];
+      for (let r = 0; r < ROWS; r++) {
+        const row = Array(n - 1).fill(false);
+        for (let c = 0; c < n - 1; c++) if (Math.random() < 0.45 && !(c > 0 && row[c - 1])) row[c] = true;
+        bridges.push(row);
+      }
+      L = { n, names, results, bridges, padX, colW: (lc.width - padX * 2) / (n - 1), paths: {}, anim: null };
+      $('#lResult').innerHTML = '<div class="result-label">이름을 클릭해 결과를 확인하세요</div><div class="result-main">-</div>';
+      $('#lResult').classList.remove('hit');
+      drawLadder();
+    }
+
+    function tracePath(start) {
+      let c = start;
+      const pts = [[colX(c), TOP]];
+      for (let r = 0; r < ROWS; r++) {
+        const y = rowY(r);
+        pts.push([colX(c), y]);
+        if (c < L.n - 1 && L.bridges[r][c]) { c++; pts.push([colX(c), y]); }
+        else if (c > 0 && L.bridges[r][c - 1]) { c--; pts.push([colX(c), y]); }
+      }
+      pts.push([colX(c), lc.height - BOTTOM_PAD]);
+      return { pts, end: c };
+    }
+
+    function strokePartial(pts, frac, color) {
+      let total = 0;
+      for (let i = 1; i < pts.length; i++) total += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+      let left = total * frac;
+      lctx.strokeStyle = color; lctx.lineWidth = 5; lctx.lineCap = 'round'; lctx.lineJoin = 'round';
+      lctx.beginPath(); lctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length && left > 0; i++) {
+        const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+        if (left >= d) { lctx.lineTo(pts[i][0], pts[i][1]); left -= d; }
+        else {
+          const t = left / d;
+          lctx.lineTo(pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t);
+          left = 0;
+        }
+      }
+      lctx.stroke();
+    }
+
+    function drawLadder() {
+      lctx.clearRect(0, 0, lc.width, lc.height);
+      if (!L) {
+        lctx.fillStyle = '#94a3b8'; lctx.font = "bold 15px 'Noto Sans KR'"; lctx.textAlign = 'center';
+        lctx.fillText('왼쪽에서 "사다리 만들기"를 눌러주세요', lc.width / 2, lc.height / 2);
+        return;
+      }
+      lctx.strokeStyle = '#475569'; lctx.lineWidth = 3; lctx.lineCap = 'round';
+      for (let c = 0; c < L.n; c++) { lctx.beginPath(); lctx.moveTo(colX(c), TOP); lctx.lineTo(colX(c), lc.height - BOTTOM_PAD); lctx.stroke(); }
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < L.n - 1; c++) if (L.bridges[r][c]) {
+        lctx.beginPath(); lctx.moveTo(colX(c), rowY(r)); lctx.lineTo(colX(c + 1), rowY(r)); lctx.stroke();
+      }
+      Object.keys(L.paths).forEach(k => strokePartial(L.paths[k].pts, 1, COLORS[k % COLORS.length]));
+      if (L.anim) strokePartial(L.anim.pts, L.anim.frac, COLORS[L.anim.col % COLORS.length]);
+
+      lctx.textAlign = 'center'; lctx.font = "bold 14px 'Noto Sans KR'";
+      for (let c = 0; c < L.n; c++) {
+        const x = colX(c);
+        lctx.fillStyle = COLORS[c % COLORS.length];
+        lctx.beginPath(); lctx.roundRect ? lctx.roundRect(x - 36, 10, 72, 30, 10) : lctx.rect(x - 36, 10, 72, 30); lctx.fill();
+        lctx.fillStyle = '#fff';
+        lctx.fillText(L.names[c].length > 6 ? L.names[c].slice(0, 6) + '…' : L.names[c], x, 30);
+      }
+      Object.keys(L.paths).forEach(k => {
+        const e = L.paths[k].end;
+        lctx.fillStyle = '#f59e0b';
+        const t = L.results[e];
+        lctx.fillText(t.length > 7 ? t.slice(0, 7) + '…' : t, colX(e), lc.height - 26);
+      });
+      lctx.fillStyle = '#64748b';
+      for (let c = 0; c < L.n; c++) {
+        const shown = Object.values(L.paths).some(p => p.end === c);
+        if (!shown) lctx.fillText('?', colX(c), lc.height - 26);
+      }
+    }
+
+    function revealOne(col, animate) {
+      if (!L || L.paths[col] || L.anim) return;
+      const res = tracePath(col);
+      const done = () => {
+        L.paths[col] = res; L.anim = null; drawLadder();
+        const box = $('#lResult'); box.classList.add('hit');
+        box.innerHTML = `<div class="result-label">${esc(L.names[col])} 님의 결과</div><div class="result-main">${esc(L.results[res.end])}</div>`;
+      };
+      if (!animate) { L.paths[col] = res; return; }
+      L.anim = { col, pts: res.pts, frac: 0 };
+      (function step() {
+        L.anim.frac += 0.025;
+        if (L.anim.frac >= 1) { done(); return; }
+        drawLadder(); requestAnimationFrame(step);
+      })();
+    }
+
+    lc.addEventListener('click', e => {
+      if (!L) return;
+      const rect = lc.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * lc.width / rect.width;
+      const y = (e.clientY - rect.top) * lc.height / rect.height;
+      if (y > TOP - 4) return;
+      let best = 0, bd = 1e9;
+      for (let c = 0; c < L.n; c++) { const d = Math.abs(x - colX(c)); if (d < bd) { bd = d; best = c; } }
+      revealOne(best, true);
+    });
+    $('#lBuild').addEventListener('click', buildLadder);
+    $('#lRevealAll').addEventListener('click', () => {
+      if (!L) { toast('먼저 사다리를 만들어주세요'); return; }
+      if (L.anim) return;
+      for (let c = 0; c < L.n; c++) if (!L.paths[c]) revealOne(c, false);
+      drawLadder();
+      $('#lResult').innerHTML = '<div class="result-label">전체 결과</div><div class="result-main" style="font-size:1rem;line-height:1.8">' +
+        L.names.map((n, c) => `${esc(n)} → ${esc(L.results[L.paths[c].end])}`).join('<br>') + '</div>';
+    });
+    drawLadder();
+
+    /* ---------- 순서 / 팀 ---------- */
+    let oText = '';
+    function renderOrder() {
+      const names = lines($('#oNames').value);
+      if (names.length < 2) { toast('이름을 2개 이상 입력하세요'); return; }
+      const s = shuffle(names);
+      oText = s.map((n, i) => `${i + 1}. ${n}`).join('\n');
+      $('#oOut').innerHTML = '<div class="list-out">' + s.map((n, i) => `<div class="list-item"><span class="no">${i + 1}</span><span>${esc(n)}</span></div>`).join('') + '</div>';
+    }
+    function renderTeams() {
+      const names = lines($('#oNames').value);
+      const k = Math.floor(Number($('#oTeams').value));
+      if (names.length < 2) { toast('이름을 2개 이상 입력하세요'); return; }
+      if (!(k >= 2) || k > names.length) { toast('팀 수는 2 이상, 이름 수 이하로 입력하세요'); return; }
+      const s = shuffle(names);
+      const teams = Array.from({ length: k }, () => []);
+      s.forEach((n, i) => teams[i % k].push(n));
+      oText = teams.map((t, i) => `${i + 1}팀: ${t.join(', ')}`).join('\n');
+      $('#oOut').innerHTML = '<div class="teams">' + teams.map((t, i) => `<div class="team"><h3>${i + 1}팀 (${t.length}명)</h3><ul>${t.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>`).join('') + '</div>';
+    }
+    $('#oOrder').addEventListener('click', renderOrder);
+    $('#oTeam').addEventListener('click', renderTeams);
+    $('#oCopy').addEventListener('click', () => copyText(oText));
+
+    /* ---------- 숫자 ---------- */
+    let nText = '';
+    $('#nPick').addEventListener('click', () => {
+      const min = Math.floor(Number($('#nMin').value));
+      const max = Math.floor(Number($('#nMax').value));
+      const cnt = Math.floor(Number($('#nCount').value));
+      const dup = $('#nDup').checked;
+      if (!(max >= min)) { toast('최댓값은 최솟값 이상이어야 해요'); return; }
+      if (!(cnt >= 1) || cnt > 100) { toast('뽑을 개수는 1~100개로 입력하세요'); return; }
+      const range = max - min + 1;
+      if (range > 1e9) { toast('범위가 너무 커요'); return; }
+      if (!dup && cnt > range) { toast('중복을 허용하지 않으면 범위(' + range + '개)보다 많이 뽑을 수 없어요'); return; }
+      let out = [];
+      if (dup) { for (let i = 0; i < cnt; i++) out.push(min + randInt(range)); }
+      else {
+        const used = new Set();
+        while (out.length < cnt) { const v = min + randInt(range); if (!used.has(v)) { used.add(v); out.push(v); } }
+      }
+      if ($('#nSort').checked) out.sort((a, b) => a - b);
+      nText = out.join(', ');
+      $('#nOut').classList.add('hit');
+      $('#nOut').innerHTML = '<div class="nums">' + out.map(v => `<span class="num-ball">${v}</span>`).join('') + '</div>';
+    });
+    $('#nCopy').addEventListener('click', () => copyText(nText));
+  </script>
+</body>
+</html>
